@@ -1,0 +1,44 @@
+country,region,gross_sales,net_sales,cancellation_rate,customers
+United Kingdom,UK,16801004.62,16168927.78,0.0376,5334
+EIRE,EU,623414.16,603116.61,0.0326,3
+Netherlands,EU,549773.41,546095.43,0.0067,22
+Germany,EU,383289.0,374573.51,0.0227,107
+France,EU,311090.29,293431.2,0.0568,93
+Australia,Rest of World,167800.01,166282.15,0.009,15
+Switzerland,Rest of World,94024.59,92918.06,0.0118,22
+Spain,EU,97766.75,84811.56,0.1325,38
+Sweden,EU,86319.14,84345.17,0.0229,19
+Denmark,EU,67422.69,63355.59,0.0603,12
+Belgium,EU,56993.17,56598.89,0.0069,29
+Portugal,EU,47338.27,46707.99,0.0133,23
+Channel Islands,EU,44030.33,41841.81,0.0497,13
+Japan,Rest of World,43023.91,39746.77,0.0762,10
+Norway,Rest of World,38575.36,38413.68,0.0042,12
+Italy,EU,28937.5,28226.8,0.0246,17
+Finland,EU,25180.1,25089.66,0.0036,13
+Cyprus,EU,24484.26,23987.56,0.0203,11
+Austria,EU,20297.01,20071.6,0.0111,13
+Greece,EU,18711.19,18660.49,0.0027,5
+Hong Kong,Rest of World,13666.45,13655.5,0.0008,0
+Singapore,Rest of World,13158.16,13158.16,0.0,1
+Israel,Rest of World,11328.81,11101.37,0.0201,4
+Unspecified,Rest of World,10927.16,10905.16,0.002,6
+Poland,EU,10214.29,9839.93,0.0367,6
+United Arab Emirates,Rest of World,10273.23,9628.15,0.0628,4
+USA,Rest of World,7920.01,5839.69,0.2627,8
+Iceland,Rest of World,4921.53,4921.53,0.0,1
+Lithuania,EU,4892.68,4892.68,0.0,1
+Malta,EU,4757.34,4667.22,0.0189,2
+Canada,Rest of World,4332.1,4332.1,0.0,5
+RSA,Rest of World,3369.03,3369.03,0.0,2
+Thailand,Rest of World,3070.54,3070.54,0.0,1
+Bahrain,Rest of World,3109.79,2861.55,0.0798,2
+Lebanon,Rest of World,1905.58,1905.58,0.0,1
+Brazil,Rest of World,1411.87,1411.87,0.0,2
+Bermuda,Rest of World,1253.14,1253.14,0.0,0
+European Community,EU,1159.25,1150.75,0.0073,1
+Korea,Rest of World,1118.51,949.82,0.1508,2
+Czech Republic,EU,786.74,671.72,0.1462,1
+West Indies,Rest of World,536.41,536.41,0.0,1
+Saudi Arabia,Rest of World,145.92,131.17,0.1011,1
+Nigeria,Rest of World,112.57,-34.48,1.3063,1

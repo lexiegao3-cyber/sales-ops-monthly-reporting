@@ -1,0 +1,6 @@
+line_type,lines,revenue_value,invoices
+sale,1003338,19643846.87,39516
+cancellation,17914,-716425.97,7405
+stock_writeoff,5961,0.0,5328
+fee_or_service,5817,75726.86,5483
+adjustment,6,-147614.08,6

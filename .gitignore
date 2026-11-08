@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store
+~$*.xlsx
+# raw source is 43.5 MB - download it (see data/README.md)
+data/raw/*.xlsx
+data/interim/
+warehouse/
+# line-level fact is ~108 MB; regenerate with run_all.py
+data/processed/fact_sales_line.csv

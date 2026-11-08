@@ -1,0 +1,153 @@
+// =====================================================================
+// DAX - Sales Operations Monthly Reporting
+// Put all measures in a blank table named _Measures.
+//
+// Model (single-direction, one-to-many):
+//   'Date'[Date]              -> fact_sales_line[invoice_date]
+//   dim_product[stock_code]   -> fact_sales_line[stock_code]
+//   dim_customer[customer_id] -> fact_sales_line[customer_id]   (guests have blank id)
+//   dim_country[country]      -> fact_sales_line[country]
+// =====================================================================
+
+
+// ---------- calculated table ----------------------------------------
+Date =
+VAR _first = DATE ( YEAR ( MIN ( fact_sales_line[invoice_date] ) ), 1, 1 )
+VAR _last  = DATE ( YEAR ( MAX ( fact_sales_line[invoice_date] ) ), 12, 31 )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( _first, _last ),
+        "Year", YEAR ( [Date] ),
+        "Month Num", MONTH ( [Date] ),
+        "Month", FORMAT ( [Date], "MMM" ),
+        "Year-Month", FORMAT ( [Date], "YYYY-MM" ),
+        "Quarter", "Q" & QUARTER ( [Date] ),
+        "Is Weekday", WEEKDAY ( [Date], 2 ) <= 5
+    )
+// Mark as date table; sort Month by Month Num.
+
+
+// ---------- revenue --------------------------------------------------
+Gross Sales =
+CALCULATE ( SUM ( fact_sales_line[line_revenue] ), fact_sales_line[line_type] = "sale" )
+
+Cancellations =
+- CALCULATE ( SUM ( fact_sales_line[line_revenue] ), fact_sales_line[line_type] = "cancellation" )
+
+Net Sales = [Gross Sales] - [Cancellations]
+
+Cancellation Rate = DIVIDE ( [Cancellations], [Gross Sales] )
+
+Fees & Postage =
+CALCULATE ( SUM ( fact_sales_line[line_revenue] ), fact_sales_line[line_type] = "fee_or_service" )
+
+
+// ---------- volume ---------------------------------------------------
+Orders =
+CALCULATE ( DISTINCTCOUNT ( fact_sales_line[invoice] ), fact_sales_line[line_type] = "sale" )
+
+Units Sold =
+CALCULATE ( SUM ( fact_sales_line[quantity] ), fact_sales_line[line_type] = "sale" )
+
+Average Order Value = DIVIDE ( [Gross Sales], [Orders] )
+
+Units per Order = DIVIDE ( [Units Sold], [Orders] )
+
+
+// ---------- customers ------------------------------------------------
+Active Customers =
+CALCULATE (
+    DISTINCTCOUNT ( fact_sales_line[customer_id] ),
+    fact_sales_line[line_type] = "sale",
+    fact_sales_line[is_guest] = 0
+)
+
+// customers whose first purchase falls in the selected period
+New Customers =
+VAR _start = MIN ( 'Date'[Date] )
+VAR _end   = MAX ( 'Date'[Date] )
+RETURN
+    CALCULATE (
+        COUNTROWS ( dim_customer ),
+        dim_customer[first_purchase] >= _start,
+        dim_customer[first_purchase] <= _end,
+        REMOVEFILTERS ( 'Date' )
+    )
+
+Returning Customers = [Active Customers] - [New Customers]
+
+Guest Share of Sales =
+DIVIDE (
+    CALCULATE ( [Gross Sales], fact_sales_line[is_guest] = 1 ),
+    [Gross Sales]
+)
+
+
+// ---------- time intelligence ----------------------------------------
+Last Data Date =
+CALCULATE ( MAX ( fact_sales_line[invoice_date] ), REMOVEFILTERS ( 'Date' ) )
+
+Is Partial Period =
+VAR _periodEnd = MAX ( 'Date'[Date] )
+RETURN IF ( [Last Data Date] < _periodEnd && [Last Data Date] >= MIN ( 'Date'[Date] ), TRUE (), FALSE () )
+
+Net Sales PM = CALCULATE ( [Net Sales], DATEADD ( 'Date'[Date], -1, MONTH ) )
+
+Net Sales MoM % =
+IF ( NOT ISBLANK ( [Net Sales PM] ), DIVIDE ( [Net Sales] - [Net Sales PM], [Net Sales PM] ) )
+
+Net Sales PY = CALCULATE ( [Net Sales], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+// Like-for-like: if the current period is cut off by the end of the data,
+// compare to the same days last year, not the whole month/year.
+Net Sales PY (like-for-like) =
+VAR _start = MIN ( 'Date'[Date] )
+VAR _end   = MIN ( MAX ( 'Date'[Date] ), [Last Data Date] )
+RETURN
+    CALCULATE (
+        [Net Sales],
+        SAMEPERIODLASTYEAR ( DATESBETWEEN ( 'Date'[Date], _start, _end ) )
+    )
+
+Net Sales YoY % =
+IF (
+    NOT ISBLANK ( [Net Sales PY (like-for-like)] ),
+    DIVIDE ( [Net Sales] - [Net Sales PY (like-for-like)], [Net Sales PY (like-for-like)] )
+)
+
+Net Sales YTD = TOTALYTD ( [Net Sales], 'Date'[Date] )
+
+Net Sales YTD PY = CALCULATE ( [Net Sales YTD], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+Net Sales Rolling 3M =
+CALCULATE ( [Net Sales], DATESINPERIOD ( 'Date'[Date], MAX ( 'Date'[Date] ), -3, MONTH ) )
+
+
+// ---------- ranking & concentration ----------------------------------
+Product Rank by Net Sales =
+IF (
+    ISINSCOPE ( dim_product[description] ),
+    RANKX ( ALLSELECTED ( dim_product[description] ), [Net Sales], , DESC, DENSE )
+)
+
+Share of Net Sales =
+DIVIDE ( [Net Sales], CALCULATE ( [Net Sales], REMOVEFILTERS ( dim_product ), REMOVEFILTERS ( dim_country ) ) )
+
+
+// ---------- labels for report titles --------------------------------
+Selected Month Label =
+IF ( HASONEVALUE ( 'Date'[Year-Month] ), VALUES ( 'Date'[Year-Month] ), "multiple months" )
+
+Partial Period Warning =
+IF ( [Is Partial Period],
+     "Data ends " & FORMAT ( [Last Data Date], "d mmm yyyy" ) & " - YoY uses the same days last year" )
+
+
+// =====================================================================
+// Row-level security (Modeling > Manage roles). Table filter on dim_country:
+//   Role "UK"            [region] = "UK"
+//   Role "EU"            [region] = "EU"
+//   Role "Rest of World" [region] = "Rest of World"
+// Test with Modeling > View as. In Power BI Service assign people/groups to
+// roles under dataset > Security.
+// =====================================================================

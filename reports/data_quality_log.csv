@@ -1,0 +1,11 @@
+step,rows,action
+raw rows (both sheets),1067371,loaded
+"invoices present in both sheets (1,088 invoices)",22523,verified identical; second copy removed
+exact duplicate lines,11812,removed
+line_type = sale,1003338,"kept, used in revenue"
+line_type = cancellation,17914,"kept, used in revenue"
+line_type = stock_writeoff,5961,"kept, excluded from product revenue"
+line_type = fee_or_service,5817,"kept, excluded from product revenue"
+line_type = adjustment,6,"kept, excluded from product revenue"
+lines with no Customer ID (guest),235151,kept in revenue; excluded from customer metrics
+rows out,1033036,line-level fact
